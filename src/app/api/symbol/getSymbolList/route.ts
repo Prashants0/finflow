@@ -1,4 +1,3 @@
-import yahooFinance from "yahoo-finance2";
 import prisma from "@/lib/prisma";
 import { bse_symbol } from "@prisma/client";
 
