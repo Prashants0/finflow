@@ -26,7 +26,6 @@ export default function Dashboard() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const [userName, setUserName] = useState<string>("");
   const [user, setUser] = useState<User | null>();
 
   useEffect(() => {
@@ -38,7 +37,6 @@ export default function Dashboard() {
       data: { user },
     } = await supabase.auth.getUser();
     setUser(user);
-    setUserName(user?.email!);
   }
 
   const {
