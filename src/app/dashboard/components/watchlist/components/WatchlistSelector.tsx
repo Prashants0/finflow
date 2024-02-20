@@ -299,8 +299,8 @@ function WatchlistSelector({ className }: { className?: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmation</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete watchlist &quot{selectedWatchlist}
-              &quot?
+              Are you sure you want to delete watchlist &quot;
+              {selectedWatchlist}&quot;?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
