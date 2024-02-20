@@ -32,8 +32,6 @@ export function UserLogInForm({ className, ...props }: UserLogInForm) {
   }
 
   async function signInWithGoogle() {
-    console.log(location.origin);
-
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
