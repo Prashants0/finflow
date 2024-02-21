@@ -6,7 +6,7 @@ import axios from "axios";
 import React from "react";
 
 function SymbolBar({ symbol_name }: { symbol_name: string }) {
-  const { setSymbols } = useSelectedSymbolState();
+  const { setSymbol: setSymbols } = useSelectedSymbolState();
 
   const [symbolPositiveStatus, setSymbolPositiveStatus] =
     React.useState<string>("text-green-400");

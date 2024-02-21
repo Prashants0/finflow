@@ -3,8 +3,11 @@
 import { useRef, useEffect } from "react";
 import { createChart, ColorType } from "lightweight-charts";
 import { SymbolCandlesData } from "@/types/symbol-types";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 const Chart = (props: {
+  symbol: string;
   data: any;
   colors?:
     | {
@@ -17,6 +20,7 @@ const Chart = (props: {
     | undefined;
 }) => {
   const {
+    symbol,
     data,
     colors: {
       backgroundColor = "white",
@@ -28,6 +32,7 @@ const Chart = (props: {
   } = props;
 
   const chartContainerRef = useRef<HTMLDivElement>();
+  const chartLegendRef = useRef<HTMLDivElement>();
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,9 +76,16 @@ const Chart = (props: {
   return (
     <>
       <div
-        className="w-full h-[80vh]"
+        className="w-full h-[80vh] parent relative"
         ref={chartContainerRef as React.RefObject<HTMLDivElement>}
-      ></div>
+      >
+        <div
+          className="absolute top-5 left-5 z-10 font-bold text-md"
+          ref={chartLegendRef as React.RefObject<HTMLDivElement>}
+        >
+          {symbol}
+        </div>
+      </div>
     </>
   );
 };
