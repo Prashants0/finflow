@@ -35,7 +35,7 @@ export function UserLogInForm({ className, ...props }: UserLogInForm) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `https://www.devbyprashant.com/api/auth/callback`,
+        redirectTo: `${origin}/api/auth/callback`,
       },
     });
   }
