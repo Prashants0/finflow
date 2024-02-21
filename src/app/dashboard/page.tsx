@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { bse_symbol } from "@prisma/client";
-import { filterSymbols } from "@/lib/utils";
+import { useFilterSymbols } from "@/lib/utils";
 import { useSymbolListState } from "../state/symbol-list";
 import { Label } from "@/components/ui/label";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
@@ -88,7 +88,7 @@ export default function Dashboard() {
   }, []);
 
   const { data: filteredSymbolsList, isLoading: filterSymbolsLoading } =
-    filterSymbols(symbolQuery, symbolsList);
+    useFilterSymbols(symbolQuery, symbolsList);
 
   return (
     <Dialog open={showAddSymbolDialog} onOpenChange={setShowAddSymbolDialog}>

@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function filterSymbols(symbolQuery: string, symbols: bse_symbol[]) {
+export function useFilterSymbols(symbolQuery: string, symbols: bse_symbol[]) {
   return useQuery({
     queryKey: ["symbols", symbolQuery],
     queryFn: async () => {

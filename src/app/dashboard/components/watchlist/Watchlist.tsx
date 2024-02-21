@@ -31,13 +31,13 @@ import {
 import { PlusIcon } from "lucide-react";
 import { useSymbolListState } from "@/app/state/symbol-list";
 import { useToast } from "@/components/ui/use-toast";
-import { filterSymbols } from "@/lib/utils";
+import { useFilterSymbols } from "@/lib/utils";
 
 function Watchlist() {
   //states
   const [showAddSymbolDialog, setShowAddSymbolDialog] =
     useState<boolean>(false);
-  const { symbolsList: symbolsList } = useSymbolListState();
+  const { symbolsList } = useSymbolListState();
   const { toast } = useToast();
   const [symbolQuery, setSymbolQuery] = useState<string>("");
   useState<Set<Watchlist_items>>();
@@ -111,7 +111,7 @@ function Watchlist() {
   });
 
   //filter symbol list based on serach query
-  const { data: filteredSymbolsList, isLoading } = filterSymbols(
+  const { data: filteredSymbolsList, isLoading } = useFilterSymbols(
     symbolQuery,
     symbolsList
   );
