@@ -6,16 +6,15 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { createBrowserClient } from "@supabase/ssr";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Watchlist from "./components/watchlist/Watchlist";
 import { User } from "@supabase/supabase-js";
 import { SelectedSymbolProvider } from "./contexts/selectedSymbol";
 import { WatchlistProvider } from "./contexts/watchlist";
 import Chart from "./components/chart/chart";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SymbolCandlesData } from "@/types/symbol-types";
-import { ImperativePanelHandle } from "react-resizable-panels";
 import { useSelectedSymbolState } from "../state/selecte-symbol";
 import {
   Dialog,
@@ -25,7 +24,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   TableHeader,
@@ -35,12 +33,13 @@ import {
   TableCell,
   Table,
 } from "@/components/ui/table";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { bse_symbol } from "@prisma/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFilterSymbols } from "@/lib/utils";
 import { useSymbolListState } from "../state/symbol-list";
 import { Label } from "@/components/ui/label";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { useChartSeriesState } from "../state/useChartSeriesState";
+import { CandlestickData, Time } from "lightweight-charts";
 
 export default function Dashboard() {
   const { symbol, setSymbol } = useSelectedSymbolState();
@@ -55,10 +54,11 @@ export default function Dashboard() {
   );
 
   const [user, setUser] = useState<User | null>();
+  const { chartSeries } = useChartSeriesState();
 
   useEffect(() => {
     getUserData();
-  }, []);
+  });
 
   async function getUserData() {
     const {
@@ -67,25 +67,30 @@ export default function Dashboard() {
     setUser(user);
   }
 
-  const {
-    refetch: refetchChart,
-    data,
-    isLoading,
-  } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["chart", symbol],
     queryFn: async () => {
       const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=${symbol}.NS`
+        `/api/symbol/getSymbolChart?symbol=MU`
       );
-      console.log(data);
-
       return data as SymbolCandlesData[];
     },
   });
 
-  useEffect(() => {
-    refetchChart();
-  }, []);
+  useQuery({
+    queryKey: ["chartSeries", symbol],
+    queryFn: async () => {
+      const { data }: { data: SymbolCandlesData[] } = await axios.get(
+        `/api/symbol/getSymbolChart?symbol=MU`
+      );
+      console.log(data[data.length - 1]);
+
+      chartSeries.update(data[data.length - 1]);
+      return data as SymbolCandlesData[];
+    },
+    refetchInterval: 300,
+  });
+  // useChartDataStore;
 
   const { data: filteredSymbolsList, isLoading: filterSymbolsLoading } =
     useFilterSymbols(symbolQuery, symbolsList);

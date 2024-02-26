@@ -3,8 +3,7 @@
 import { useRef, useEffect } from "react";
 import { createChart, ColorType } from "lightweight-charts";
 import { SymbolCandlesData } from "@/types/symbol-types";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useChartSeriesState } from "@/app/state/useChartSeriesState";
 
 const Chart = (props: {
   symbol: string;
@@ -33,6 +32,7 @@ const Chart = (props: {
 
   const chartContainerRef = useRef<HTMLDivElement>();
   const chartLegendRef = useRef<HTMLDivElement>();
+  const { setChartSeries } = useChartSeriesState();
 
   useEffect(() => {
     const handleResize = () => {
@@ -56,6 +56,8 @@ const Chart = (props: {
       wickDownColor: "#ef5350",
     });
 
+    setChartSeries(newSeries);
+
     newSeries.setData(data as SymbolCandlesData[]);
 
     window.addEventListener("resize", handleResize);
@@ -66,6 +68,7 @@ const Chart = (props: {
       chart.remove();
     };
   }, [
+    setChartSeries,
     data,
     backgroundColor,
     lineColor,
