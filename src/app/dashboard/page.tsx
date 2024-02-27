@@ -71,7 +71,7 @@ export default function Dashboard() {
     queryKey: ["chart", symbol],
     queryFn: async () => {
       const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=MU`
+        `/api/symbol/getSymbolChart?symbol=${symbol}`
       );
       return data as SymbolCandlesData[];
     },
@@ -81,7 +81,7 @@ export default function Dashboard() {
     queryKey: ["chartSeries", symbol],
     queryFn: async () => {
       const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=MU`
+        `/api/symbol/getSymbolChart?symbol=${symbol}`
       );
       console.log(data[data.length - 1]);
 
