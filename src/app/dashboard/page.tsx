@@ -39,7 +39,6 @@ import { useSymbolListState } from "../state/symbol-list";
 import { Label } from "@/components/ui/label";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useChartSeriesState } from "../state/useChartSeriesState";
-import { CandlestickData, Time } from "lightweight-charts";
 
 export default function Dashboard() {
   const { symbol, setSymbol } = useSelectedSymbolState();
@@ -58,7 +57,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     getUserData();
-  });
+  }, []);
 
   async function getUserData() {
     const {
@@ -71,20 +70,18 @@ export default function Dashboard() {
     queryKey: ["chart", symbol],
     queryFn: async () => {
       const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=${symbol}`
+        `/api/symbol/getSymbolChart?symbol=${symbol}.BO`
       );
       return data as SymbolCandlesData[];
     },
   });
 
   useQuery({
-    queryKey: ["chartSeries", symbol],
+    queryKey: ["chartSeries"],
     queryFn: async () => {
       const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=${symbol}`
+        `/api/symbol/getSymbolChart?symbol=${symbol}.BO`
       );
-      console.log(data[data.length - 1]);
-
       chartSeries.update(data[data.length - 1]);
       return data as SymbolCandlesData[];
     },

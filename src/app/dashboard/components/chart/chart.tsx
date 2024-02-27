@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { createChart, ColorType } from "lightweight-charts";
+import { createChart, ColorType, ISeriesApi } from "lightweight-charts";
 import { SymbolCandlesData } from "@/types/symbol-types";
 import { useChartSeriesState } from "@/app/state/useChartSeriesState";
 
@@ -55,7 +55,6 @@ const Chart = (props: {
       wickUpColor: "#26a69a",
       wickDownColor: "#ef5350",
     });
-
     setChartSeries(newSeries);
 
     newSeries.setData(data as SymbolCandlesData[]);
@@ -64,11 +63,12 @@ const Chart = (props: {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-
+      setChartSeries({} as ISeriesApi<"Candlestick">);
       chart.remove();
     };
   }, [
     setChartSeries,
+    symbol,
     data,
     backgroundColor,
     lineColor,

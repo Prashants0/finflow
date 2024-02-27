@@ -48,18 +48,6 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/components/supabase";
 import { useQuery } from "@tanstack/react-query";
 
-const get_watchlists = async (user_id: string) => {
-  console.log(user_id);
-
-  const response: AxiosResponse = await axios.get(
-    `/api/watchlist/getWatchlist?user_id=${user_id}`
-  );
-  if (response.status !== 200) {
-    throw new Error("Failed to fetch watchlists");
-  }
-  return response.data;
-};
-
 const create_watchlist = async (name: String) => {
   const response: AxiosResponse = await axios.post(
     "/api/watchlist/createWatchlist",
@@ -99,7 +87,6 @@ function WatchlistSelector({ className }: { className?: string }) {
   const [refreshTrigger, setRefreshTrigger] = React.useState(true);
   const [newWatchlistName, setNewWatchlistName] = React.useState<String>("");
   const [hoveringList, setHoveringList] = React.useState<String>("");
-  const [watchlists, setWatchlists] = React.useState<Watchlists[]>([]);
   const [open, setOpen] = React.useState<boolean>(false);
   const [showNewWatchlistDialog, setShowNewWatchlistDialog] =
     React.useState(false);
@@ -122,6 +109,25 @@ function WatchlistSelector({ className }: { className?: string }) {
         });
       });
   };
+  const { data: watchlists } = useQuery({
+    queryKey: ["wathclistGet", refreshTrigger],
+    queryFn: async () => {
+      const user = await supabase.auth.getUser();
+      const response: AxiosResponse = await axios.get(
+        `/api/watchlist/getWatchlist?user_id=${user.data.user?.id}`
+      );
+      if (response.status !== 200) {
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to fetch watchlists",
+          duration: 5000,
+        });
+      }
+      let watchlists: Watchlists[] = response.data as Watchlists[];
+      return watchlists;
+    },
+  });
 
   const deleteSelectedWatchlist = () => {
     delete_watchlist(watchlistId.toString())
@@ -129,8 +135,8 @@ function WatchlistSelector({ className }: { className?: string }) {
         setRefreshTrigger(!refreshTrigger);
         setShowNewWatchlistDialog(false);
         setNewWatchlistName("");
-        setSelectedWatchlist(watchlists[0].name);
-        updateWatchlistId(watchlists[0].watchlist_id);
+        setSelectedWatchlist(watchlists![0].name);
+        updateWatchlistId(watchlists![0].watchlist_id);
       })
       .catch((err) => {
         toast({
@@ -141,28 +147,6 @@ function WatchlistSelector({ className }: { className?: string }) {
         });
       });
   };
-
-  useQuery({
-    queryKey: ["wathclistGet", refreshTrigger, open],
-    queryFn: async () => {
-      const user = await supabase.auth.getUser();
-      await get_watchlists(user.data.user?.id as string)
-        .then((resData) => {
-          let watchlists: Watchlists[] = resData as Watchlists[];
-          setWatchlists(watchlists);
-          console.log(watchlists);
-        })
-        .catch((err) => {
-          toast({
-            variant: "destructive",
-            title: "Uh oh! Something went wrong.",
-            description: err.message,
-            duration: 5000,
-          });
-        });
-      return true;
-    },
-  });
 
   return (
     <>
