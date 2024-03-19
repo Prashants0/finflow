@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import { createChart, ColorType, ISeriesApi } from "lightweight-charts";
 import { SymbolCandlesData } from "@/types/symbol-types";
 import { useChartSeriesState } from "@/app/state/useChartSeriesState";
+import { useChartState } from "@/app/state/Chart-state";
 
 const Chart = (props: {
   symbol: string;
@@ -33,11 +34,16 @@ const Chart = (props: {
   const chartContainerRef = useRef<HTMLDivElement>();
   const chartLegendRef = useRef<HTMLDivElement>();
   const { setChartSeries } = useChartSeriesState();
+  const { setChart } = useChartState();
 
   useEffect(() => {
     const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current!.clientWidth });
+      chart.applyOptions({
+        width: chartContainerRef.current!.clientWidth,
+        height: chartContainerRef.current!.clientHeight,
+      });
     };
+    console.log(chartContainerRef.current!.clientHeight);
 
     const chart = createChart(chartContainerRef.current!, {
       layout: {
@@ -45,7 +51,13 @@ const Chart = (props: {
         textColor,
       },
       width: chartContainerRef.current!.clientWidth,
-      height: chartContainerRef.current!.clientHeight,
+      height: chartContainerRef.current!.clientHeight - 40,
+    });
+
+    setChart(chart);
+
+    chart.timeScale().applyOptions({
+      rightOffset: 20,
     });
 
     const newSeries = chart.addCandlestickSeries({
@@ -63,7 +75,7 @@ const Chart = (props: {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      setChartSeries({} as ISeriesApi<"Candlestick">);
+      setChartSeries(undefined);
       chart.remove();
     };
   }, [
@@ -75,11 +87,12 @@ const Chart = (props: {
     textColor,
     areaTopColor,
     areaBottomColor,
+    setChart,
   ]);
   return (
     <>
       <div
-        className="w-full h-[80vh] parent relative"
+        className="w-full relative h-full"
         ref={chartContainerRef as React.RefObject<HTMLDivElement>}
       >
         <div

@@ -6,7 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { createBrowserClient } from "@supabase/ssr";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Watchlist from "./components/watchlist/Watchlist";
 import { User } from "@supabase/supabase-js";
 import { SelectedSymbolProvider } from "./contexts/selectedSymbol";
@@ -34,149 +34,82 @@ import {
   Table,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFilterSymbols } from "@/lib/utils";
+import { supabase, useFilterSymbols } from "@/lib/utils";
 import { useSymbolListState } from "../state/symbol-list";
 import { Label } from "@/components/ui/label";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useChartSeriesState } from "../state/useChartSeriesState";
+import { useChartState } from "../state/Chart-state";
+import Holding from "./components/holding/holding";
+import ChartPanel, { ChartPanelRef } from "./components/chart/chartPanel";
 
 export default function Dashboard() {
-  const { symbol, setSymbol } = useSelectedSymbolState();
-  const { symbolsList } = useSymbolListState();
-  const [symbolQuery, setSymbolQuery] = useState<string>("");
-  const [showAddSymbolDialog, setShowAddSymbolDialog] =
-    useState<boolean>(false);
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const [user, setUser] = useState<User | null>();
-  const { chartSeries } = useChartSeriesState();
+
+  const chartPanelRef = useRef<ChartPanelRef>(null);
 
   useEffect(() => {
-    getUserData();
-  }, []);
+    if (!user) {
+      getUserData();
+    }
+  }, [user]);
 
   async function getUserData() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     setUser(user);
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["chart", symbol],
-    queryFn: async () => {
-      const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=${symbol}.BO`
-      );
-      return data as SymbolCandlesData[];
-    },
-  });
-
-  useQuery({
-    queryKey: ["chartSeries"],
-    queryFn: async () => {
-      const { data }: { data: SymbolCandlesData[] } = await axios.get(
-        `/api/symbol/getSymbolChart?symbol=${symbol}.BO`
-      );
-      chartSeries.update(data[data.length - 1]);
-      return data as SymbolCandlesData[];
-    },
-    refetchInterval: 300,
-  });
-  // useChartDataStore;
-
-  const { data: filteredSymbolsList, isLoading: filterSymbolsLoading } =
-    useFilterSymbols(symbolQuery, symbolsList);
+  function handlePanelResize(size: number, prevSize: number | undefined): void {
+    chartPanelRef.current?.handlePanelResize();
+  }
 
   return (
-    <Dialog open={showAddSymbolDialog} onOpenChange={setShowAddSymbolDialog}>
-      <div className="h-[93vh]">
-        <WatchlistProvider>
-          <SelectedSymbolProvider>
+    <WatchlistProvider>
+      <SelectedSymbolProvider>
+        <ResizablePanelGroup
+          className="h-full items-stretch"
+          direction={"horizontal"}
+          onLayout={(sizes: number[]) => {
+            document.cookie = `react-resizable-panels:layout=${JSON.stringify(
+              sizes
+            )}`;
+          }}
+        >
+          <ResizablePanel
+            className=" border-grey"
+            defaultSize={200}
+            onResize={handlePanelResize}
+            key={"chart"}
+          >
             <ResizablePanelGroup
-              direction={"horizontal"}
+              direction={"vertical"}
               onLayout={(sizes: number[]) => {
-                document.cookie = `react-resizable-panels:layout=${JSON.stringify(
+                document.cookie = `react-resizables-panels:layout=${JSON.stringify(
                   sizes
                 )}`;
               }}
             >
               <ResizablePanel
-                className="border-4 border-grey"
+                className="border-grey h-full "
                 defaultSize={200}
+                key={"chart"}
+                onResize={handlePanelResize}
               >
-                <div id="chart-toolbar" className="border-b-4 p-1">
-                  <DialogTrigger onClick={() => setShowAddSymbolDialog(true)}>
-                    <Label className="text-md flex items-center gap-1 cursor-pointer hover:bg-gray-200 w-fit pr-2 pt-1 pl-1 pb-1">
-                      <MagnifyingGlassIcon className="w-5 h-5" /> {symbol}
-                    </Label>
-                  </DialogTrigger>
-                </div>
-                <div>
-                  {isLoading ? (
-                    <h1>Loading</h1>
-                  ) : (
-                    <Chart symbol={symbol} data={data} />
-                  )}
-                </div>
+                <ChartPanel ref={chartPanelRef} />
               </ResizablePanel>
-              <ResizableHandle />
-              <ResizablePanel defaultSize={20} minSize={20}>
-                <Watchlist key={user?.id} />
-              </ResizablePanel>
+              <ResizableHandle withHandle className="border-black " />
+              <Holding />
             </ResizablePanelGroup>
-          </SelectedSymbolProvider>
-        </WatchlistProvider>
-      </div>
-      <DialogContent className="px-0 max-w-none w-[80vh] m-0">
-        <DialogHeader className="p-1">
-          <DialogTitle>Search Symbol</DialogTitle>
-        </DialogHeader>
-        <Input
-          value={symbolQuery}
-          onChange={(e) => setSymbolQuery(e.target.value)}
-          className="rounded-none focus-visible:ring-offset-0 focus-visible:ring-0 py-1 my-0"
-          placeholder="Watchlist name"
-        />
-        <ScrollArea className="h-[50vh]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Symbol</TableHead>
-                <TableHead>Comapny Name</TableHead>
-                <TableHead className="text-right"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filterSymbolsLoading ? (
-                <TableRow>
-                  <TableCell className="font-medium">Loading...</TableCell>
-                </TableRow>
-              ) : (
-                filteredSymbolsList?.map((symbol) => (
-                  <TableRow
-                    key={symbol.symbol_Id}
-                    onClick={() => {
-                      setSymbol(symbol.symbol_Id);
-                      setShowAddSymbolDialog(false);
-                    }}
-                  >
-                    <TableCell className="font-medium">
-                      {symbol.symbol_Id}
-                    </TableCell>
-                    <TableCell>{symbol.issuer_name}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-        <DialogFooter></DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </ResizablePanel>
+          <ResizableHandle withHandle className="border-black " />
+          <ResizablePanel defaultSize={20} minSize={20}>
+            <Watchlist key={user?.id} />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </SelectedSymbolProvider>
+    </WatchlistProvider>
   );
 }

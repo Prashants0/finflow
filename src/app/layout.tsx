@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "min-h-screen font-sans antialiased grainy bg-gray-50",
+          "min-h-screen h-screen font-sans antialiased grainy relative bg-gray-50",
           inter.className
         )}
       >

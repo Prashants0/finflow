@@ -8,7 +8,7 @@ import React from "react";
 function SymbolBar({ symbol_name }: { symbol_name: string }) {
   const { setSymbol: setSymbols } = useSelectedSymbolState();
 
-  const [symbolPositiveStatus, setSymbolPositiveStatus] =
+  const [symbolPositiveStatusCSS, setSymbolPositiveStatusCSS] =
     React.useState<string>("text-green-400");
   const { data: symbol_data, isLoading } = useQuery({
     queryKey: ["symbol", symbol_name],
@@ -17,13 +17,13 @@ function SymbolBar({ symbol_name }: { symbol_name: string }) {
         symbol: symbol_name,
       });
       if (data.change > 0) {
-        setSymbolPositiveStatus("text-green-400");
+        setSymbolPositiveStatusCSS("text-green-400");
       }
       if (data.change < 0) {
-        setSymbolPositiveStatus("text-red-400");
+        setSymbolPositiveStatusCSS("text-red-400");
       }
       if (data.change === 0) {
-        setSymbolPositiveStatus("text-gray-400");
+        setSymbolPositiveStatusCSS("text-gray-400");
       }
       return data;
     },
@@ -44,10 +44,10 @@ function SymbolBar({ symbol_name }: { symbol_name: string }) {
         <span>{symbol_name}</span>
         <div className="grid  p-0.5 grid-cols-2 justify-items-end  text-sm">
           <span className="col-span-2">{symbol_data.price}</span>
-          <span className={`text-xs p-0.5 ${symbolPositiveStatus}`}>
+          <span className={`text-xs p-0.5 ${symbolPositiveStatusCSS}`}>
             {symbol_data.change}
           </span>
-          <span className={`text-xs p-0.5 ${symbolPositiveStatus}`}>
+          <span className={`text-xs p-0.5 ${symbolPositiveStatusCSS}`}>
             ( {symbol_data.changePercent} % )
           </span>
         </div>

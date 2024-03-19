@@ -7,7 +7,7 @@ export async function POST(req: Request, res: Response) {
     regularMarketChange,
     regularMarketPrice,
     regularMarketChangePercent,
-  } = await yahooFinance.quoteCombine(`${symbol}.BO`);
+  } = await yahooFinance.quoteCombine(`${symbol}.NS`);
   return new Response(
     JSON.stringify({
       change: regularMarketChange?.toFixed(2),
